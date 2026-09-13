@@ -27,7 +27,21 @@
         <option value="F">여자</option>
       </select>
     </label>
-    <label>경도 (기본 127, 서울) <input type="number" id="longitude" value="127"></label>
+    <label>출생지
+      <select id="city">
+        <option value="127">서울/인천/경기</option>
+        <option value="127">대전/충청</option>
+        <option value="127">광주/전라</option>
+        <option value="129">부산/울산/경남</option>
+        <option value="129">대구/경북</option>
+        <option value="128">강원</option>
+        <option value="126">제주</option>
+        <option value="custom">직접 입력 (경도)</option>
+      </select>
+    </label>
+    <label id="longitude-label" style="display: none;">경도
+      <input type="number" id="longitude" value="127">
+    </label>
     <button type="submit">계산</button>
   </form>
   <div id="result"></div>
@@ -64,6 +78,20 @@
     }
 
     const datetimeInput = document.getElementById('datetime');
+    const citySelect = document.getElementById('city');
+    const longitudeLabel = document.getElementById('longitude-label');
+    const longitudeInput = document.getElementById('longitude');
+
+    citySelect.addEventListener('change', () => {
+      longitudeLabel.style.display = citySelect.value === 'custom' ? 'block' : 'none';
+    });
+
+    function getLongitude() {
+      if (citySelect.value === 'custom') {
+        return Number(longitudeInput.value) || 127;
+      }
+      return Number(citySelect.value);
+    }
 
     // 입력란 자체를 숫자만 추출해 YYYY/MM/DD HH:mm 형태로 다시 표시한다
     datetimeInput.addEventListener('input', () => {
@@ -83,7 +111,7 @@
         return;
       }
       const { year, month, day, hour, minute } = parsed;
-      const longitude = Number(document.getElementById('longitude').value) || 127;
+      const longitude = getLongitude();
       const gender = document.getElementById('gender').value || undefined;
 
       try {

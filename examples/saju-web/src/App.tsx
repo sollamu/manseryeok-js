@@ -30,6 +30,17 @@ function parseDatetime(digits: string): ParsedDatetime | null {
   }
 }
 
+const CITY_OPTIONS = [
+  { value: 'seoul', label: '서울/인천/경기', longitude: 127 },
+  { value: 'daejeon', label: '대전/충청', longitude: 127 },
+  { value: 'gwangju', label: '광주/전라', longitude: 127 },
+  { value: 'busan', label: '부산/울산/경남', longitude: 129 },
+  { value: 'daegu', label: '대구/경북', longitude: 129 },
+  { value: 'gangwon', label: '강원', longitude: 128 },
+  { value: 'jeju', label: '제주', longitude: 126 },
+  { value: 'custom', label: '직접 입력 (경도)', longitude: null },
+] as const
+
 // 입력 중인 숫자를 자른 위치까지만 YYYY/MM/DD HH:mm 형태로 보여준다 (예: "19730" -> "1973/0")
 function formatPartial(digits: string): string {
   const parts = [
@@ -49,9 +60,15 @@ function formatPartial(digits: string): string {
 
 function App() {
   const [raw, setRaw] = useState(formatPartial('199005151430'))
-  const [longitude, setLongitude] = useState('127')
+  const [city, setCity] = useState<(typeof CITY_OPTIONS)[number]['value']>('seoul')
+  const [customLongitude, setCustomLongitude] = useState('127')
   const [gender, setGender] = useState<Gender | ''>('')
   const datetimeInputRef = useRef<HTMLInputElement>(null)
+
+  const longitude =
+    city === 'custom'
+      ? Number(customLongitude) || 127
+      : (CITY_OPTIONS.find((c) => c.value === city)?.longitude ?? 127)
 
   const digits = raw.replace(/\D/g, '')
   const parsed = parseDatetime(digits)
@@ -66,7 +83,7 @@ function App() {
     if (!parsed) return null
     try {
       return calculateSaju(parsed.year, parsed.month, parsed.day, parsed.hour, parsed.minute, {
-        longitude: Number(longitude) || 127,
+        longitude,
         gender: gender || undefined,
       })
     } catch (err) {
@@ -112,17 +129,37 @@ function App() {
           </div>
 
           <div className="flex flex-col gap-2">
-            <Label htmlFor="longitude" className="text-base">
-              경도 (기본 127, 서울)
+            <Label htmlFor="city" className="text-base">
+              출생지
             </Label>
-            <Input
-              id="longitude"
-              type="number"
-              value={longitude}
-              onChange={(e) => setLongitude(e.target.value)}
-              className="h-12 text-xl"
-            />
+            <Select value={city} onValueChange={(v) => setCity(v as (typeof CITY_OPTIONS)[number]['value'])}>
+              <SelectTrigger id="city" className="h-12 w-full text-xl">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {CITY_OPTIONS.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
+
+          {city === 'custom' && (
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="longitude" className="text-base">
+                경도
+              </Label>
+              <Input
+                id="longitude"
+                type="number"
+                value={customLongitude}
+                onChange={(e) => setCustomLongitude(e.target.value)}
+                className="h-12 text-xl"
+              />
+            </div>
+          )}
 
           <div className="min-h-32 rounded-lg border bg-muted/30 p-4 font-mono text-xl">
             {!parsed && <p className="text-muted-foreground">12자리 숫자를 모두 입력하세요.</p>}
