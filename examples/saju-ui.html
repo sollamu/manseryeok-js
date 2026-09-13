@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>사주팔자 계산기</title>
+<style>
+  body { font-family: sans-serif; max-width: 600px; margin: 40px auto; padding: 0 16px; }
+  h1 { font-size: 1.5rem; }
+  label { display: block; margin-top: 16px; font-size: 1.1rem; }
+  input { width: 100%; padding: 12px; font-size: 1.4rem; box-sizing: border-box; }
+  button { margin-top: 20px; padding: 12px 24px; font-size: 1.2rem; }
+  #result { margin-top: 28px; white-space: pre-wrap; font-family: monospace; font-size: 1.3rem; }
+  .error { color: #c00; }
+  #datetime-preview { font-family: monospace; color: #666; margin-top: 8px; min-height: 1.5em; font-size: 1.8rem; font-weight: bold; }
+</style>
+</head>
+<body>
+  <h1>사주팔자 계산기 (시주 포함)</h1>
+  <form id="saju-form">
+    <label>생년월일시 (YYYYMMDDHHmm, 예: 197305111037)
+      <input type="text" id="datetime" inputmode="numeric" pattern="\d{12}" placeholder="197305111037" value="199005151430" required>
+    </label>
+    <div id="datetime-preview"></div>
+    <label>경도 (기본 127, 서울) <input type="number" id="longitude" value="127"></label>
+    <button type="submit">계산</button>
+  </form>
+  <div id="result"></div>
+
+  <script type="module">
+    import { calculateSaju } from '../dist/index.mjs';
+
+    function parseDatetime(digits) {
+      if (!/^\d{12}$/.test(digits)) return null;
+      return {
+        year: Number(digits.slice(0, 4)),
+        month: Number(digits.slice(4, 6)),
+        day: Number(digits.slice(6, 8)),
+        hour: Number(digits.slice(8, 10)),
+        minute: Number(digits.slice(10, 12)),
+      };
+    }
+
+    // 입력 중인 숫자를 자른 위치까지만 YYYY/MM/DD HH:mm 형태로 보여준다 (예: "19730" -> "1973/0")
+    function formatPartial(digits) {
+      const parts = [
+        digits.slice(0, 4),
+        digits.slice(4, 6),
+        digits.slice(6, 8),
+        digits.slice(8, 10),
+        digits.slice(10, 12),
+      ];
+      let text = parts[0];
+      if (parts[1]) text += '/' + parts[1];
+      if (parts[2]) text += '/' + parts[2];
+      if (parts[3]) text += ' ' + parts[3];
+      if (parts[4]) text += ':' + parts[4];
+      return text;
+    }
+
+    const datetimeInput = document.getElementById('datetime');
+    const previewEl = document.getElementById('datetime-preview');
+
+    datetimeInput.addEventListener('input', () => {
+      const digits = datetimeInput.value.replace(/\D/g, '');
+      previewEl.textContent = formatPartial(digits);
+    });
+    datetimeInput.dispatchEvent(new Event('input'));
+
+    document.getElementById('saju-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const resultEl = document.getElementById('result');
+      const parsed = parseDatetime(datetimeInput.value);
+      if (!parsed) {
+        resultEl.textContent = '12자리 숫자(YYYYMMDDHHmm)로 입력하세요. 예: 197305111037';
+        resultEl.classList.add('error');
+        return;
+      }
+      const { year, month, day, hour, minute } = parsed;
+      const longitude = Number(document.getElementById('longitude').value) || 127;
+
+      try {
+        const saju = calculateSaju(year, month, day, hour, minute, { longitude });
+        let text = `년주: ${saju.yearPillar} (${saju.yearPillarHanja})\n`;
+        text += `월주: ${saju.monthPillar} (${saju.monthPillarHanja})\n`;
+        text += `일주: ${saju.dayPillar} (${saju.dayPillarHanja})\n`;
+        text += `시주: ${saju.hourPillar} (${saju.hourPillarHanja})`;
+        if (saju.isTimeCorrected) {
+          text += `\n시간 보정: ${saju.correctedTime.hour}시 ${saju.correctedTime.minute}분 (진태양시)`;
+        }
+        resultEl.textContent = text;
+        resultEl.classList.remove('error');
+      } catch (err) {
+        resultEl.textContent = err.message;
+        resultEl.classList.add('error');
+      }
+    });
+  </script>
+</body>
+</html>
