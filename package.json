@@ -22,7 +22,10 @@
     "typecheck": "tsc --noEmit",
     "prepublishOnly": "npm run build && npm test",
     "dump-data": "ts-node scripts/dump-mysql-data.ts",
-    "convert-data": "ts-node scripts/convert-to-js-data.ts"
+    "convert-data": "ts-node scripts/convert-to-js-data.ts",
+    "web:install": "npm install --prefix examples/saju-web",
+    "dev": "npm run dev --prefix examples/saju-web",
+    "web:build": "npm run build --prefix examples/saju-web"
   },
   "keywords": [
     "korean",

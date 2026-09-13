@@ -45,6 +45,14 @@ npm install @fullstackfamily/manseryeok
 # 예제 실행 (빌드 후)
 node examples/01-solar-to-lunar.mjs
 node examples/06-saju-calculation.mjs
+node examples/13-saju-cli.mjs 1990 5 15 14 30 127 M   # CLI: 년 월 일 시 분 경도 성별(M/F)
+```
+
+웹 UI 예제(`examples/saju-web/`, React + shadcn/ui)는 별도 앱이지만, 프로젝트 루트에서 바로 실행할 수 있습니다:
+
+```bash
+npm run web:install   # 최초 1회
+npm run dev
 ```
 
 ### 예제 목록
@@ -63,6 +71,8 @@ node examples/06-saju-calculation.mjs
 | `10-sixty-pillars.mjs` | 60갑자 데이터 조회 |
 | `11-solar-terms-info.mjs` | 24절기 정보 조회 |
 | `12-solar-terms-datetime.mjs` | 절기 시각 조회 |
+| `13-saju-cli.mjs` | 사주팔자 계산 CLI (연월일시/성별 인자 입력) |
+| `saju-web/` | 사주팔자 계산 웹 UI (Vite + React + shadcn/ui) |
 
 ## 사용법
 
