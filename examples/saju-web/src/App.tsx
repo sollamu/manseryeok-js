@@ -180,16 +180,17 @@ function App() {
                 <p>
                   시주: {result.hourPillar} ({result.hourPillarHanja})
                 </p>
-                {result.isTimeCorrected && result.correctedTime && (
-                  <p className="text-muted-foreground text-base">
-                    시간 보정: {result.correctedTime.hour}시 {result.correctedTime.minute}분 (진태양시)
-                  </p>
-                )}
                 {result.daeun && (
                   <p className="text-muted-foreground text-base">
                     대운수: {result.daeun.daeunSu} ({result.daeun.direction}, 절기까지{' '}
                     {result.daeun.daysToSolarTerm}일)
                   </p>
+                )}
+                {result.isTimeCorrected && result.correctedTime && (
+                  <details className="text-muted-foreground text-base">
+                    <summary className="cursor-pointer">상세보기</summary>
+                    시간 보정: {result.correctedTime.hour}시 {result.correctedTime.minute}분 (진태양시)
+                  </details>
                 )}
               </div>
             )}
