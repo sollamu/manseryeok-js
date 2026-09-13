@@ -191,6 +191,24 @@ console.log(`사주: ${saju.yearPillar}년 ${saju.monthPillar}월 ${saju.dayPill
 // 사주: 계해년 병인월 병인일 기축시
 ```
 
+### 대운수(大運數) 계산
+
+```ts
+import { calculateSaju } from '@fullstackfamily/manseryeok';
+
+// gender('M' | 'F')를 지정하면 daeun(대운수)이 함께 계산됩니다
+const saju = calculateSaju(1990, 5, 15, 14, 30, { gender: 'M' });
+
+console.log(saju.daeun);
+// { direction: '순행', daeunSu: 7, daysToSolarTerm: 22 }
+```
+
+**계산 방식:**
+- 년간(년주 천간)이 양간(갑병무경임)이면서 남자, 또는 음간(을정기신계)이면서 여자면 **순행**(미래 절기 방향), 그 반대는 **역행**(과거 절기 방향)입니다.
+- 생일 기준으로 순행/역행 방향에 있는 가장 가까운 절기(節氣, 12개 - 중기 제외)까지의 날짜 수를 3으로 나눈 값이 대운수입니다.
+
+**⚠ 정밀도 참고:** 대운수는 연도별 정밀 절기 시각 데이터(2020~2030년만 지원)가 아니라 매년 거의 고정적인 절기 평균 날짜를 사용합니다. 따라서 1900~2050년 전체 연도에서 동작하지만, 실제 절기 시각과 하루 이내의 오차가 있을 수 있는 **근사치**입니다.
+
 ### 시간 보정 및 경도 설정
 
 ```ts
@@ -486,6 +504,7 @@ console.log('절기 데이터 지원 연도:', supportedYears.join(', '));
 - `options`: 사주 계산 옵션
   - `longitude`: 경도 (기본값: 127 - 서울)
   - `applyTimeCorrection`: 시간 보정 적용 여부 (기본값: true)
+  - `gender`: 성별 ('M' | 'F') - 지정하면 결과에 `daeun`(대운수)이 포함됨
 
 **반환값:** `SajuResult`
 

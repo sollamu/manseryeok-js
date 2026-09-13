@@ -63,6 +63,27 @@ export const SOLAR_TERM_NAMES: Array<{
 ];
 
 /**
+ * 12절기(節氣, 중기 제외)의 근사 양력 날짜
+ *
+ * 사주 월 경계(getSajuMonth) 및 대운수 계산(calculateDaeunSu)에서 공통으로 사용합니다.
+ * 연도별 정확한 시각이 아닌, 매년 거의 고정적인 평균 날짜입니다.
+ */
+export const JEOLGI_APPROX_DATES: Array<{ month: number; day: number; sajuMonth: number }> = [
+  { month: 1, day: 6, sajuMonth: 12 }, // 소한 → 축월
+  { month: 2, day: 4, sajuMonth: 1 }, // 입춘 → 인월
+  { month: 3, day: 6, sajuMonth: 2 }, // 경칩 → 묘월
+  { month: 4, day: 5, sajuMonth: 3 }, // 청명 → 진월
+  { month: 5, day: 6, sajuMonth: 4 }, // 입하 → 사월
+  { month: 6, day: 6, sajuMonth: 5 }, // 망종 → 오월
+  { month: 7, day: 7, sajuMonth: 6 }, // 소서 → 미월
+  { month: 8, day: 8, sajuMonth: 7 }, // 입추 → 신월
+  { month: 9, day: 8, sajuMonth: 8 }, // 백로 → 유월
+  { month: 10, day: 8, sajuMonth: 9 }, // 한로 → 술월
+  { month: 11, day: 8, sajuMonth: 10 }, // 입동 → 해월
+  { month: 12, day: 7, sajuMonth: 11 }, // 대설 → 자월
+];
+
+/**
  * 절기 인덱스로 절기 정보 조회
  */
 export function getSolarTermByIndex(index: number) {

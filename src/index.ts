@@ -50,6 +50,12 @@ export {
   type SajuResult,
   type SajuOptions,
 } from './core/saju';
+export {
+  calculateDaeunSu,
+  getDaeunDirection,
+  type DaeunInfo,
+  type Gender,
+} from './core/daeun';
 
 // ============================================
 // Solar Terms (절기)
