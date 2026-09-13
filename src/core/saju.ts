@@ -5,6 +5,7 @@
  */
 
 import { getGapja } from './solar-lunar-converter';
+import { calculateDaeunSu, type DaeunInfo, type Gender } from './daeun';
 import type { GapjaResult } from '../types';
 
 /**
@@ -33,6 +34,8 @@ export interface SajuResult {
   isTimeCorrected: boolean;
   /** 보정된 시간 (분 단위) */
   correctedTime?: { hour: number; minute: number };
+  /** 대운수 정보 - options.gender 입력 시에만 계산됨 */
+  daeun?: DaeunInfo;
 }
 
 /**
@@ -43,6 +46,8 @@ export interface SajuOptions {
   longitude?: number;
   /** 시간 보정 적용 여부 (기본값: true) */
   applyTimeCorrection?: boolean;
+  /** 성별 - 지정하면 대운수(daeun)를 함께 계산 */
+  gender?: Gender;
 }
 
 /**
@@ -67,10 +72,16 @@ export function calculateSaju(
   const {
     longitude = 127,
     applyTimeCorrection = true,
+    gender,
   } = options;
 
   // 갑자 계산 (년주, 월주, 일주)
   const gapja = getGapja(solarYear, solarMonth, solarDay);
+
+  // 대운수 계산 (성별이 주어진 경우에만)
+  const daeun = gender
+    ? calculateDaeunSu(solarYear, solarMonth, solarDay, gapja.yearPillar.charAt(0), gender)
+    : undefined;
 
   // 시주 계산
   let hourPillar: string | null = null;
@@ -139,6 +150,7 @@ export function calculateSaju(
     gapja,
     isTimeCorrected,
     correctedTime,
+    daeun,
   };
 }
 

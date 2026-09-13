@@ -1,8 +1,15 @@
 import { useMemo, useState } from 'react'
-import { calculateSaju } from '@fullstackfamily/manseryeok'
+import { calculateSaju, type Gender } from '@fullstackfamily/manseryeok'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 
 interface ParsedDatetime {
   year: number
@@ -43,6 +50,7 @@ function formatPartial(digits: string): string {
 function App() {
   const [raw, setRaw] = useState('199005151430')
   const [longitude, setLongitude] = useState('127')
+  const [gender, setGender] = useState<Gender | ''>('')
 
   const digits = raw.replace(/\D/g, '')
   const preview = formatPartial(digits)
@@ -53,11 +61,12 @@ function App() {
     try {
       return calculateSaju(parsed.year, parsed.month, parsed.day, parsed.hour, parsed.minute, {
         longitude: Number(longitude) || 127,
+        gender: gender || undefined,
       })
     } catch (err) {
       return { error: (err as Error).message } as const
     }
-  }, [parsed, longitude])
+  }, [parsed, longitude, gender])
 
   return (
     <div className="flex min-h-svh items-center justify-center p-6">
@@ -79,6 +88,21 @@ function App() {
               className="h-14 text-2xl"
             />
             <p className="min-h-8 font-mono text-3xl font-bold text-foreground">{preview}</p>
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="gender" className="text-base">
+              성별
+            </Label>
+            <Select value={gender} onValueChange={(v) => setGender(v as Gender)}>
+              <SelectTrigger id="gender" className="h-12 w-full text-xl">
+                <SelectValue placeholder="선택 안 함 (대운수 계산 안 함)" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="M">남자</SelectItem>
+                <SelectItem value="F">여자</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="flex flex-col gap-2">
@@ -116,6 +140,12 @@ function App() {
                 {result.isTimeCorrected && result.correctedTime && (
                   <p className="text-muted-foreground text-base">
                     시간 보정: {result.correctedTime.hour}시 {result.correctedTime.minute}분 (진태양시)
+                  </p>
+                )}
+                {result.daeun && (
+                  <p className="text-muted-foreground text-base">
+                    대운수: {result.daeun.daeunSu} ({result.daeun.direction}, 절기까지{' '}
+                    {result.daeun.daysToSolarTerm}일)
                   </p>
                 )}
               </div>

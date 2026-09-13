@@ -7,7 +7,7 @@
   body { font-family: sans-serif; max-width: 600px; margin: 40px auto; padding: 0 16px; }
   h1 { font-size: 1.5rem; }
   label { display: block; margin-top: 16px; font-size: 1.1rem; }
-  input { width: 100%; padding: 12px; font-size: 1.4rem; box-sizing: border-box; }
+  input, select { width: 100%; padding: 12px; font-size: 1.4rem; box-sizing: border-box; }
   button { margin-top: 20px; padding: 12px 24px; font-size: 1.2rem; }
   #result { margin-top: 28px; white-space: pre-wrap; font-family: monospace; font-size: 1.3rem; }
   .error { color: #c00; }
@@ -21,6 +21,13 @@
       <input type="text" id="datetime" inputmode="numeric" pattern="\d{12}" placeholder="197305111037" value="199005151430" required>
     </label>
     <div id="datetime-preview"></div>
+    <label>성별
+      <select id="gender">
+        <option value="">선택 안 함 (대운수 계산 안 함)</option>
+        <option value="M">남자</option>
+        <option value="F">여자</option>
+      </select>
+    </label>
     <label>경도 (기본 127, 서울) <input type="number" id="longitude" value="127"></label>
     <button type="submit">계산</button>
   </form>
@@ -77,15 +84,19 @@
       }
       const { year, month, day, hour, minute } = parsed;
       const longitude = Number(document.getElementById('longitude').value) || 127;
+      const gender = document.getElementById('gender').value || undefined;
 
       try {
-        const saju = calculateSaju(year, month, day, hour, minute, { longitude });
+        const saju = calculateSaju(year, month, day, hour, minute, { longitude, gender });
         let text = `년주: ${saju.yearPillar} (${saju.yearPillarHanja})\n`;
         text += `월주: ${saju.monthPillar} (${saju.monthPillarHanja})\n`;
         text += `일주: ${saju.dayPillar} (${saju.dayPillarHanja})\n`;
         text += `시주: ${saju.hourPillar} (${saju.hourPillarHanja})`;
         if (saju.isTimeCorrected) {
           text += `\n시간 보정: ${saju.correctedTime.hour}시 ${saju.correctedTime.minute}분 (진태양시)`;
+        }
+        if (saju.daeun) {
+          text += `\n대운수: ${saju.daeun.daeunSu} (${saju.daeun.direction}, 절기까지 ${saju.daeun.daysToSolarTerm}일)`;
         }
         resultEl.textContent = text;
         resultEl.classList.remove('error');

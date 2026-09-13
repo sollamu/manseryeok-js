@@ -4,7 +4,7 @@
  * 한국 24절기 정보를 제공합니다.
  */
 
-import { SOLAR_TERM_NAMES } from '../data/solar-terms';
+import { SOLAR_TERM_NAMES, JEOLGI_APPROX_DATES } from '../data/solar-terms';
 import { SOLAR_TERMS_DATA, SUPPORTED_SOLAR_TERM_YEARS } from '../data/solar-terms-data';
 import type { SolarTermDateTime } from '../types';
 
@@ -198,26 +198,10 @@ export function getSupportedSolarTermYears(): number[] {
  * @returns 사주 월 (1~12)
  */
 export function getSajuMonth(month: number, day: number): number {
-  // 백엔드 코드와 동일한 방식으로 사주 월 계산
-  const termDates = [
-    { solarMonth: 1, day: 6, sajuMonth: 12 }, // 소한 → 축월
-    { solarMonth: 2, day: 4, sajuMonth: 1 }, // 입춘 → 인월
-    { solarMonth: 3, day: 6, sajuMonth: 2 }, // 경칩 → 묘월
-    { solarMonth: 4, day: 5, sajuMonth: 3 }, // 청명 → 진월
-    { solarMonth: 5, day: 6, sajuMonth: 4 }, // 입하 → 사월
-    { solarMonth: 6, day: 6, sajuMonth: 5 }, // 망종 → 오월
-    { solarMonth: 7, day: 7, sajuMonth: 6 }, // 소서 → 미월
-    { solarMonth: 8, day: 8, sajuMonth: 7 }, // 입추 → 신월
-    { solarMonth: 9, day: 8, sajuMonth: 8 }, // 백로 → 유월
-    { solarMonth: 10, day: 8, sajuMonth: 9 }, // 한로 → 술월
-    { solarMonth: 11, day: 8, sajuMonth: 10 }, // 입동 → 해월
-    { solarMonth: 12, day: 7, sajuMonth: 11 }, // 대설 → 자월
-  ];
-
   // 역순으로 검사하여 현재 날짜가 속한 월 찾기
-  for (let i = termDates.length - 1; i >= 0; i--) {
-    const term = termDates[i];
-    if (month > term.solarMonth || (month === term.solarMonth && day >= term.day)) {
+  for (let i = JEOLGI_APPROX_DATES.length - 1; i >= 0; i--) {
+    const term = JEOLGI_APPROX_DATES[i];
+    if (month > term.month || (month === term.month && day >= term.day)) {
       return term.sajuMonth;
     }
   }
