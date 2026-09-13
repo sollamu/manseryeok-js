@@ -9,8 +9,10 @@
   label { display: block; margin-top: 16px; font-size: 1.1rem; }
   input, select { width: 100%; padding: 12px; font-size: 1.4rem; box-sizing: border-box; }
   button { margin-top: 20px; padding: 12px 24px; font-size: 1.2rem; }
-  #result { margin-top: 28px; white-space: pre-wrap; font-family: monospace; font-size: 1.3rem; }
+  #result { margin-top: 28px; font-family: monospace; font-size: 1.3rem; line-height: 1.8; }
   .error { color: #c00; }
+  #result details { margin-top: 4px; }
+  #result summary { cursor: pointer; color: #666; font-size: 1.1rem; }
   #datetime { font-family: monospace; font-weight: bold; font-size: 2.2rem; padding: 16px; letter-spacing: 1px; }
 </style>
 </head>
@@ -27,7 +29,21 @@
         <option value="F">여자</option>
       </select>
     </label>
-    <label>경도 (기본 127, 서울) <input type="number" id="longitude" value="127"></label>
+    <label>출생지
+      <select id="city">
+        <option value="127">서울/인천/경기</option>
+        <option value="127">대전/충청</option>
+        <option value="127">광주/전라</option>
+        <option value="129">부산/울산/경남</option>
+        <option value="129">대구/경북</option>
+        <option value="128">강원</option>
+        <option value="126">제주</option>
+        <option value="custom">직접 입력 (경도)</option>
+      </select>
+    </label>
+    <label id="longitude-label" style="display: none;">경도
+      <input type="number" id="longitude" value="127">
+    </label>
     <button type="submit">계산</button>
   </form>
   <div id="result"></div>
@@ -44,6 +60,16 @@
         hour: Number(digits.slice(8, 10)),
         minute: Number(digits.slice(10, 12)),
       };
+    }
+
+    // 만 나이 계산 (생일이 지났으면 올해 - 출생연도, 안 지났으면 -1)
+    function calcManAge(year, month, day) {
+      const today = new Date();
+      let age = today.getFullYear() - year;
+      const hadBirthday =
+        today.getMonth() + 1 > month || (today.getMonth() + 1 === month && today.getDate() >= day);
+      if (!hadBirthday) age -= 1;
+      return age;
     }
 
     // 입력 중인 숫자를 자른 위치까지만 YYYY/MM/DD HH:mm 형태로 보여준다 (예: "19730" -> "1973/0")
@@ -64,6 +90,20 @@
     }
 
     const datetimeInput = document.getElementById('datetime');
+    const citySelect = document.getElementById('city');
+    const longitudeLabel = document.getElementById('longitude-label');
+    const longitudeInput = document.getElementById('longitude');
+
+    citySelect.addEventListener('change', () => {
+      longitudeLabel.style.display = citySelect.value === 'custom' ? 'block' : 'none';
+    });
+
+    function getLongitude() {
+      if (citySelect.value === 'custom') {
+        return Number(longitudeInput.value) || 127;
+      }
+      return Number(citySelect.value);
+    }
 
     // 입력란 자체를 숫자만 추출해 YYYY/MM/DD HH:mm 형태로 다시 표시한다
     datetimeInput.addEventListener('input', () => {
@@ -83,22 +123,23 @@
         return;
       }
       const { year, month, day, hour, minute } = parsed;
-      const longitude = Number(document.getElementById('longitude').value) || 127;
+      const longitude = getLongitude();
       const gender = document.getElementById('gender').value || undefined;
 
       try {
         const saju = calculateSaju(year, month, day, hour, minute, { longitude, gender });
-        let text = `년주: ${saju.yearPillar} (${saju.yearPillarHanja})\n`;
-        text += `월주: ${saju.monthPillar} (${saju.monthPillarHanja})\n`;
-        text += `일주: ${saju.dayPillar} (${saju.dayPillarHanja})\n`;
-        text += `시주: ${saju.hourPillar} (${saju.hourPillarHanja})`;
-        if (saju.isTimeCorrected) {
-          text += `\n시간 보정: ${saju.correctedTime.hour}시 ${saju.correctedTime.minute}분 (진태양시)`;
-        }
+        let html = `년주: ${saju.yearPillar} (${saju.yearPillarHanja})<br>`;
+        html += `월주: ${saju.monthPillar} (${saju.monthPillarHanja})<br>`;
+        html += `일주: ${saju.dayPillar} (${saju.dayPillarHanja})<br>`;
+        html += `시주: ${saju.hourPillar} (${saju.hourPillarHanja})`;
         if (saju.daeun) {
-          text += `\n대운수: ${saju.daeun.daeunSu} (${saju.daeun.direction}, 절기까지 ${saju.daeun.daysToSolarTerm}일)`;
+          html += `<br>대운수: ${saju.daeun.daeunSu} (${saju.daeun.direction}, 절기까지 ${saju.daeun.daysToSolarTerm}일)`;
         }
-        resultEl.textContent = text;
+        html += `<br>만나이: ${calcManAge(year, month, day)}세`;
+        if (saju.isTimeCorrected) {
+          html += `<details><summary>상세보기</summary>시간 보정: ${saju.correctedTime.hour}시 ${saju.correctedTime.minute}분 (진태양시)</details>`;
+        }
+        resultEl.innerHTML = html;
         resultEl.classList.remove('error');
       } catch (err) {
         resultEl.textContent = err.message;
