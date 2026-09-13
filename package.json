@@ -8,6 +8,7 @@
   "files": [
     "dist",
     "examples",
+    "!examples/saju-web",
     "README.md",
     "LICENSE"
   ],

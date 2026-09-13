@@ -1,0 +1,130 @@
+import { useMemo, useState } from 'react'
+import { calculateSaju } from '@fullstackfamily/manseryeok'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+
+interface ParsedDatetime {
+  year: number
+  month: number
+  day: number
+  hour: number
+  minute: number
+}
+
+function parseDatetime(digits: string): ParsedDatetime | null {
+  if (!/^\d{12}$/.test(digits)) return null
+  return {
+    year: Number(digits.slice(0, 4)),
+    month: Number(digits.slice(4, 6)),
+    day: Number(digits.slice(6, 8)),
+    hour: Number(digits.slice(8, 10)),
+    minute: Number(digits.slice(10, 12)),
+  }
+}
+
+// 입력 중인 숫자를 자른 위치까지만 YYYY/MM/DD HH:mm 형태로 보여준다 (예: "19730" -> "1973/0")
+function formatPartial(digits: string): string {
+  const parts = [
+    digits.slice(0, 4),
+    digits.slice(4, 6),
+    digits.slice(6, 8),
+    digits.slice(8, 10),
+    digits.slice(10, 12),
+  ]
+  let text = parts[0]
+  if (parts[1]) text += '/' + parts[1]
+  if (parts[2]) text += '/' + parts[2]
+  if (parts[3]) text += ' ' + parts[3]
+  if (parts[4]) text += ':' + parts[4]
+  return text
+}
+
+function App() {
+  const [raw, setRaw] = useState('199005151430')
+  const [longitude, setLongitude] = useState('127')
+
+  const digits = raw.replace(/\D/g, '')
+  const preview = formatPartial(digits)
+  const parsed = parseDatetime(digits)
+
+  const result = useMemo(() => {
+    if (!parsed) return null
+    try {
+      return calculateSaju(parsed.year, parsed.month, parsed.day, parsed.hour, parsed.minute, {
+        longitude: Number(longitude) || 127,
+      })
+    } catch (err) {
+      return { error: (err as Error).message } as const
+    }
+  }, [parsed, longitude])
+
+  return (
+    <div className="flex min-h-svh items-center justify-center p-6">
+      <Card className="w-full max-w-lg">
+        <CardHeader>
+          <CardTitle className="text-2xl">사주팔자 계산기</CardTitle>
+        </CardHeader>
+        <CardContent className="flex flex-col gap-6">
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="datetime" className="text-base">
+              생년월일시 (YYYYMMDDHHmm, 예: 197305111037)
+            </Label>
+            <Input
+              id="datetime"
+              inputMode="numeric"
+              placeholder="197305111037"
+              value={raw}
+              onChange={(e) => setRaw(e.target.value)}
+              className="h-14 text-2xl"
+            />
+            <p className="min-h-8 font-mono text-3xl font-bold text-foreground">{preview}</p>
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="longitude" className="text-base">
+              경도 (기본 127, 서울)
+            </Label>
+            <Input
+              id="longitude"
+              type="number"
+              value={longitude}
+              onChange={(e) => setLongitude(e.target.value)}
+              className="h-12 text-xl"
+            />
+          </div>
+
+          <div className="min-h-32 rounded-lg border bg-muted/30 p-4 font-mono text-xl">
+            {!parsed && <p className="text-muted-foreground">12자리 숫자를 모두 입력하세요.</p>}
+            {parsed && result && 'error' in result && (
+              <p className="text-destructive">{result.error}</p>
+            )}
+            {parsed && result && !('error' in result) && (
+              <div className="flex flex-col gap-1">
+                <p>
+                  년주: {result.yearPillar} ({result.yearPillarHanja})
+                </p>
+                <p>
+                  월주: {result.monthPillar} ({result.monthPillarHanja})
+                </p>
+                <p>
+                  일주: {result.dayPillar} ({result.dayPillarHanja})
+                </p>
+                <p>
+                  시주: {result.hourPillar} ({result.hourPillarHanja})
+                </p>
+                {result.isTimeCorrected && result.correctedTime && (
+                  <p className="text-muted-foreground text-base">
+                    시간 보정: {result.correctedTime.hour}시 {result.correctedTime.minute}분 (진태양시)
+                  </p>
+                )}
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  )
+}
+
+export default App

@@ -22,4 +22,4 @@ birth-examples.js
 src/data/date-index-compressed.ts
 
 .omc/
-
+.playwright-mcp/
