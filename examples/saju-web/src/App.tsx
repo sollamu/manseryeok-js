@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { calculateSaju, type Gender } from '@fullstackfamily/manseryeok'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -48,13 +48,19 @@ function formatPartial(digits: string): string {
 }
 
 function App() {
-  const [raw, setRaw] = useState('199005151430')
+  const [raw, setRaw] = useState(formatPartial('199005151430'))
   const [longitude, setLongitude] = useState('127')
   const [gender, setGender] = useState<Gender | ''>('')
+  const datetimeInputRef = useRef<HTMLInputElement>(null)
 
   const digits = raw.replace(/\D/g, '')
-  const preview = formatPartial(digits)
   const parsed = parseDatetime(digits)
+
+  // 입력란 자체를 숫자만 추출해 YYYY/MM/DD HH:mm 형태로 다시 표시한다
+  useEffect(() => {
+    const el = datetimeInputRef.current
+    if (el) el.setSelectionRange(el.value.length, el.value.length)
+  }, [raw])
 
   const result = useMemo(() => {
     if (!parsed) return null
@@ -77,17 +83,17 @@ function App() {
         <CardContent className="flex flex-col gap-6">
           <div className="flex flex-col gap-2">
             <Label htmlFor="datetime" className="text-base">
-              생년월일시 (YYYYMMDDHHmm, 예: 197305111037)
+              생년월일시 (숫자만 순서대로 입력, 예: 197305111037)
             </Label>
             <Input
               id="datetime"
+              ref={datetimeInputRef}
               inputMode="numeric"
-              placeholder="197305111037"
+              placeholder="1973/05/11 10:37"
               value={raw}
-              onChange={(e) => setRaw(e.target.value)}
-              className="h-14 text-2xl"
+              onChange={(e) => setRaw(formatPartial(e.target.value.replace(/\D/g, '').slice(0, 12)))}
+              className="h-14 font-mono text-2xl font-bold"
             />
-            <p className="min-h-8 font-mono text-3xl font-bold text-foreground">{preview}</p>
           </div>
 
           <div className="flex flex-col gap-2">

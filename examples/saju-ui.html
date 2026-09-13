@@ -11,16 +11,15 @@
   button { margin-top: 20px; padding: 12px 24px; font-size: 1.2rem; }
   #result { margin-top: 28px; white-space: pre-wrap; font-family: monospace; font-size: 1.3rem; }
   .error { color: #c00; }
-  #datetime-preview { font-family: monospace; color: #666; margin-top: 8px; min-height: 1.5em; font-size: 1.8rem; font-weight: bold; }
+  #datetime { font-family: monospace; font-weight: bold; }
 </style>
 </head>
 <body>
   <h1>사주팔자 계산기 (시주 포함)</h1>
   <form id="saju-form">
-    <label>생년월일시 (YYYYMMDDHHmm, 예: 197305111037)
-      <input type="text" id="datetime" inputmode="numeric" pattern="\d{12}" placeholder="197305111037" value="199005151430" required>
+    <label>생년월일시 (숫자만 순서대로 입력, 예: 197305111037)
+      <input type="text" id="datetime" inputmode="numeric" placeholder="1973/05/11 10:37" value="199005151430" required>
     </label>
-    <div id="datetime-preview"></div>
     <label>성별
       <select id="gender">
         <option value="">선택 안 함 (대운수 계산 안 함)</option>
@@ -65,20 +64,21 @@
     }
 
     const datetimeInput = document.getElementById('datetime');
-    const previewEl = document.getElementById('datetime-preview');
 
+    // 입력란 자체를 숫자만 추출해 YYYY/MM/DD HH:mm 형태로 다시 표시한다
     datetimeInput.addEventListener('input', () => {
-      const digits = datetimeInput.value.replace(/\D/g, '');
-      previewEl.textContent = formatPartial(digits);
+      const digits = datetimeInput.value.replace(/\D/g, '').slice(0, 12);
+      datetimeInput.value = formatPartial(digits);
+      datetimeInput.setSelectionRange(datetimeInput.value.length, datetimeInput.value.length);
     });
     datetimeInput.dispatchEvent(new Event('input'));
 
     document.getElementById('saju-form').addEventListener('submit', (e) => {
       e.preventDefault();
       const resultEl = document.getElementById('result');
-      const parsed = parseDatetime(datetimeInput.value);
+      const parsed = parseDatetime(datetimeInput.value.replace(/\D/g, ''));
       if (!parsed) {
-        resultEl.textContent = '12자리 숫자(YYYYMMDDHHmm)로 입력하세요. 예: 197305111037';
+        resultEl.textContent = '연월일시 12자리를 모두 입력하세요. 예: 1973/05/11 10:37';
         resultEl.classList.add('error');
         return;
       }
