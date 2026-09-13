@@ -92,7 +92,7 @@ function App() {
               placeholder="1973/05/11 10:37"
               value={raw}
               onChange={(e) => setRaw(formatPartial(e.target.value.replace(/\D/g, '').slice(0, 12)))}
-              className="h-14 font-mono text-2xl font-bold"
+              className="h-20 font-mono text-4xl font-bold tracking-wide md:text-4xl"
             />
           </div>
 
