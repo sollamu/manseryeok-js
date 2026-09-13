@@ -41,6 +41,16 @@ const CITY_OPTIONS = [
   { value: 'custom', label: '직접 입력 (경도)', longitude: null },
 ] as const
 
+// 만 나이 계산 (생일이 지났으면 올해 - 출생연도, 안 지났으면 -1)
+function calcManAge(year: number, month: number, day: number): number {
+  const today = new Date()
+  let age = today.getFullYear() - year
+  const hadBirthday =
+    today.getMonth() + 1 > month || (today.getMonth() + 1 === month && today.getDate() >= day)
+  if (!hadBirthday) age -= 1
+  return age
+}
+
 // 입력 중인 숫자를 자른 위치까지만 YYYY/MM/DD HH:mm 형태로 보여준다 (예: "19730" -> "1973/0")
 function formatPartial(digits: string): string {
   const parts = [
@@ -186,6 +196,7 @@ function App() {
                     {result.daeun.daysToSolarTerm}일)
                   </p>
                 )}
+                {parsed && <p>만나이: {calcManAge(parsed.year, parsed.month, parsed.day)}세</p>}
                 {result.isTimeCorrected && result.correctedTime && (
                   <details className="text-muted-foreground text-base">
                     <summary className="cursor-pointer">상세보기</summary>

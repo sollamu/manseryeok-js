@@ -62,6 +62,16 @@
       };
     }
 
+    // 만 나이 계산 (생일이 지났으면 올해 - 출생연도, 안 지났으면 -1)
+    function calcManAge(year, month, day) {
+      const today = new Date();
+      let age = today.getFullYear() - year;
+      const hadBirthday =
+        today.getMonth() + 1 > month || (today.getMonth() + 1 === month && today.getDate() >= day);
+      if (!hadBirthday) age -= 1;
+      return age;
+    }
+
     // 입력 중인 숫자를 자른 위치까지만 YYYY/MM/DD HH:mm 형태로 보여준다 (예: "19730" -> "1973/0")
     function formatPartial(digits) {
       const parts = [
@@ -125,6 +135,7 @@
         if (saju.daeun) {
           html += `<br>대운수: ${saju.daeun.daeunSu} (${saju.daeun.direction}, 절기까지 ${saju.daeun.daysToSolarTerm}일)`;
         }
+        html += `<br>만나이: ${calcManAge(year, month, day)}세`;
         if (saju.isTimeCorrected) {
           html += `<details><summary>상세보기</summary>시간 보정: ${saju.correctedTime.hour}시 ${saju.correctedTime.minute}분 (진태양시)</details>`;
         }
