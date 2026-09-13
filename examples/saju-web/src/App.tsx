@@ -181,7 +181,7 @@ function App() {
                   시주: {result.hourPillar} ({result.hourPillarHanja})
                 </p>
                 {result.daeun && (
-                  <p className="text-muted-foreground text-base">
+                  <p>
                     대운수: {result.daeun.daeunSu} ({result.daeun.direction}, 절기까지{' '}
                     {result.daeun.daysToSolarTerm}일)
                   </p>
