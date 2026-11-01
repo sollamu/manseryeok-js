@@ -44,6 +44,15 @@ function formatYmd(d: { year: number; month: number; day: number }): string {
   return `${d.year}/${pad2(d.month)}/${pad2(d.day)}`
 }
 
+// 시진 참고표 (라이브러리 기준: 23~01시 자시, 이후 2시간 단위)
+const SIJIN_LIST = ['자', '축', '인', '묘', '진', '사', '오', '미', '신', '유', '술', '해'].map(
+  (name, i) => {
+    const start = (23 + i * 2) % 24
+    const end = (start + 2) % 24
+    return { range: `${pad2(start)}:00~${pad2(end)}:00`, name: `${name}시` }
+  },
+)
+
 const CITY_OPTIONS = [
   { value: 'seoul', label: '서울/인천/경기', longitude: 127 },
   { value: 'daejeon', label: '대전/충청', longitude: 127 },
@@ -244,11 +253,22 @@ function App() {
                 )}
                 <p>만나이: {calcManAge(result.solar.year, result.solar.month, result.solar.day)}세</p>
                 {result.isTimeCorrected && result.correctedTime && (
-                  <details open className="text-muted-foreground text-base">
+                  <details open className="text-blue-600">
                     <summary className="cursor-pointer">상세보기</summary>
                     시간 보정: {result.correctedTime.hour}시 {result.correctedTime.minute}분 (진태양시)
                   </details>
                 )}
+                <div className="mt-2 flex flex-col gap-1">
+                  {SIJIN_LIST.map((s) => (
+                    <p key={s.name}>
+                      {s.range} {s.name}
+                    </p>
+                  ))}
+                </div>
+                <div className="mt-2 text-muted-foreground">
+                  <p>※ 시작 시각 포함, 끝 시각 미포함 (예: 09:00~11:00 사시 = 09:00~10:59)</p>
+                  <p>※ 입력 시각이 아닌 보정된 시간(진태양시) 기준</p>
+                </div>
               </div>
             )}
           </div>
