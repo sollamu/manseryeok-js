@@ -198,7 +198,7 @@ function App() {
                 )}
                 {parsed && <p>만나이: {calcManAge(parsed.year, parsed.month, parsed.day)}세</p>}
                 {result.isTimeCorrected && result.correctedTime && (
-                  <details className="text-muted-foreground text-base">
+                  <details open className="text-muted-foreground text-base">
                     <summary className="cursor-pointer">상세보기</summary>
                     시간 보정: {result.correctedTime.hour}시 {result.correctedTime.minute}분 (진태양시)
                   </details>
