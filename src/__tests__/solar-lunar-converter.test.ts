@@ -100,6 +100,18 @@ describe('lunarToSolar', () => {
     expect(result.gapja.yearPillar).toBe('계해');
   });
 
+  test('음력 섣달이 이듬해 양력에 걸치는 경우 (음력 1989-12-20 → 양력 1990-01-16)', () => {
+    const result = lunarToSolar(1989, 12, 20, false);
+
+    expect(result.solar).toEqual({ year: 1990, month: 1, day: 16 });
+    expect(solarToLunar(1990, 1, 16).lunar).toEqual({
+      year: 1989,
+      month: 12,
+      day: 20,
+      isLeapMonth: false,
+    });
+  });
+
   test('지원 범위 밖 연도 (1899년)', () => {
     expect(() => lunarToSolar(1899, 1, 1)).toThrow(OutOfRangeError);
   });

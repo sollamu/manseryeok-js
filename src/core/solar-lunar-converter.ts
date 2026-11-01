@@ -90,8 +90,13 @@ export function lunarToSolar(
 
   // 2. 음력 → 양력 역인덱스 조회
   // 전체 인덱스를 순회하며 일치하는 항목 찾기
-  for (let month = 1; month <= 12; month++) {
-    const monthIndex = getMonthlyIndex(lunarYear, month);
+  // 음력 섣달(12월) 후반은 이듬해 양력 1~2월에 해당하므로 다음 해 1~2월까지 조회한다
+  const candidates: Array<[number, number]> = [];
+  for (let month = 1; month <= 12; month++) candidates.push([lunarYear, month]);
+  candidates.push([lunarYear + 1, 1], [lunarYear + 1, 2]);
+
+  for (const [year, month] of candidates) {
+    const monthIndex = getMonthlyIndex(year, month);
     if (!monthIndex) continue;
 
     const entry = monthIndex.entries.find(

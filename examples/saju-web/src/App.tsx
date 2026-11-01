@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { calculateSaju, type Gender } from '@fullstackfamily/manseryeok'
+import { calculateSaju, lunarToSolar, solarToLunar, type Gender } from '@fullstackfamily/manseryeok'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -28,6 +28,20 @@ function parseDatetime(digits: string): ParsedDatetime | null {
     hour: Number(digits.slice(8, 10)),
     minute: Number(digits.slice(10, 12)),
   }
+}
+
+type CalendarType = 'solar' | 'lunar' | 'lunarLeap'
+
+const CALENDAR_OPTIONS: { value: CalendarType; label: string }[] = [
+  { value: 'solar', label: '양력' },
+  { value: 'lunar', label: '음력' },
+  { value: 'lunarLeap', label: '음력 (윤달)' },
+]
+
+const pad2 = (n: number) => String(n).padStart(2, '0')
+
+function formatYmd(d: { year: number; month: number; day: number }): string {
+  return `${d.year}/${pad2(d.month)}/${pad2(d.day)}`
 }
 
 const CITY_OPTIONS = [
@@ -73,6 +87,7 @@ function App() {
   const [city, setCity] = useState<(typeof CITY_OPTIONS)[number]['value']>('seoul')
   const [customLongitude, setCustomLongitude] = useState('127')
   const [gender, setGender] = useState<Gender | ''>('')
+  const [calendar, setCalendar] = useState<CalendarType>('solar')
   const datetimeInputRef = useRef<HTMLInputElement>(null)
 
   const longitude =
@@ -92,14 +107,20 @@ function App() {
   const result = useMemo(() => {
     if (!parsed) return null
     try {
-      return calculateSaju(parsed.year, parsed.month, parsed.day, parsed.hour, parsed.minute, {
+      // 입력이 음력이면 양력으로 변환하고, 양력이면 음력을 구해 둘 다 표시한다
+      const { solar, lunar } =
+        calendar === 'solar'
+          ? solarToLunar(parsed.year, parsed.month, parsed.day)
+          : lunarToSolar(parsed.year, parsed.month, parsed.day, calendar === 'lunarLeap')
+      const saju = calculateSaju(solar.year, solar.month, solar.day, parsed.hour, parsed.minute, {
         longitude,
         gender: gender || undefined,
       })
+      return { ...saju, solar, lunar }
     } catch (err) {
       return { error: (err as Error).message } as const
     }
-  }, [parsed, longitude, gender])
+  }, [parsed, calendar, longitude, gender])
 
   return (
     <div className="flex min-h-svh items-center justify-center p-6">
@@ -109,8 +130,26 @@ function App() {
         </CardHeader>
         <CardContent className="flex flex-col gap-6">
           <div className="flex flex-col gap-2">
+            <Label htmlFor="calendar" className="text-base">
+              양력/음력
+            </Label>
+            <Select value={calendar} onValueChange={(v) => setCalendar(v as CalendarType)}>
+              <SelectTrigger id="calendar" className="h-12 w-full text-xl">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {CALENDAR_OPTIONS.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="flex flex-col gap-2">
             <Label htmlFor="datetime" className="text-base">
-              생년월일시 (숫자만 순서대로 입력, 예: 197305111037)
+              생년월일시 ({CALENDAR_OPTIONS.find((c) => c.value === calendar)?.label}, 숫자만 순서대로 입력, 예: 197305111037)
             </Label>
             <Input
               id="datetime"
@@ -179,6 +218,13 @@ function App() {
             {parsed && result && !('error' in result) && (
               <div className="flex flex-col gap-1">
                 <p>
+                  양력: {formatYmd(result.solar)} {pad2(parsed.hour)}:{pad2(parsed.minute)}
+                </p>
+                <p>
+                  음력: {formatYmd(result.lunar)}
+                  {result.lunar.isLeapMonth && ' (윤달)'} {pad2(parsed.hour)}:{pad2(parsed.minute)}
+                </p>
+                <p>
                   년주: {result.yearPillar} ({result.yearPillarHanja})
                 </p>
                 <p>
@@ -196,7 +242,7 @@ function App() {
                     {result.daeun.daysToSolarTerm}일)
                   </p>
                 )}
-                {parsed && <p>만나이: {calcManAge(parsed.year, parsed.month, parsed.day)}세</p>}
+                <p>만나이: {calcManAge(result.solar.year, result.solar.month, result.solar.day)}세</p>
                 {result.isTimeCorrected && result.correctedTime && (
                   <details open className="text-muted-foreground text-base">
                     <summary className="cursor-pointer">상세보기</summary>
